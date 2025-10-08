@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Maps Diagnostic — World Explorer Quiz</title>
+    <style>
+      body{font-family:system-ui,Segoe UI,Arial; padding:18px}
+      .row{margin:8px 0;padding:10px;border:1px solid #eee;border-radius:6px}
+      .ok{color:green}
+      .bad{color:crimson}
+      pre{background:#f6f8fa;padding:8px;border-radius:6px}
+      button{padding:8px 12px}
+    </style>
+  </head>
+  <body>
+    <h2>Google Maps / Street View Diagnostic</h2>
+    <p>This page will try to load the Maps JS using `config.js`'s key and run a few Street View lookups to report statuses.</p>
+    <div>
+      <button id="start">Load Maps & Run Tests</button>
+      <button id="reload" style="margin-left:8px">Reload Maps Script</button>
+    </div>
+    <div id="status" class="row" style="margin-top:12px">Status: <span id="statustxt">idle</span></div>
+    <div id="results"></div>
+
+    <script src="../config.js"></script>
+    <script src="diagnose.js" defer></script>
+  </body>
+</html>
