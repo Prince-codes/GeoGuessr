@@ -1,45 +1,52 @@
-# World Explorer Quiz
+# GeoSphere Challenge
 
-Interactive Street View guessing game inspired by GeoGuessr. Built with Google Maps JavaScript API and Street View Service.
+An immersive, futuristic geography guessing game powered by Google Street View and Maps.
 
-Setup
-1. Copy `config.js` and add your Google Maps API key: `const GOOGLE_MAPS_API_KEY = 'YOUR_KEY';`
-2. Ensure the following APIs are enabled in Google Cloud Console: `Maps JavaScript API` and `Street View API/Service`.
-3. Run locally or deploy to GitHub Pages.
+## Features
+- Random global Street View selection with graceful retry
+- Dual-pane layout: Street View and interactive world map
+- Scoring via Haversine distance and time bonus
+- Neon-glass UI with aurora background and particle effects
+- Animated reveal: pins + amber beam + auto-zoom
+- 5-round game with summary and share
 
-Running locally (recommended)
-1. Install a simple static server (the start script uses `http-server`):
+## Tech Stack
+- HTML5, CSS3, Vanilla JS
+- Google Maps JavaScript API + Street View Service
+- Hosting: GitHub Pages
 
-```powershell
-npx http-server -c-1 -p 8080
+## Setup
+1. Create a Google Cloud project and enable Maps JavaScript API + Street View.
+2. Add your API key to `config.js`. Restrict by HTTP referrer for security.
+3. Serve the folder locally or push to GitHub Pages.
+
+## Local Development
+Use any static server. Example:
+
+```bash
+npx serve .
 ```
 
-2. Open http://localhost:8080 in your browser.
+Then open http://localhost:3000 (or the printed URL).
 
-Notes on the API key
-- Keep your API key restricted to the domains where you'll deploy (e.g., GitHub Pages origin).
-- If you open `index.html` with `file://` you may find Maps does not load reliably — use the static server above.
+## Deployment (GitHub Pages)
+- Commit and push this repository.
+- In repo settings, enable GitHub Pages for the `main` branch `/root`.
 
-Notes
-- This is a static client-side app. Keep your API key restricted in the Google Console.
-- Add your pin icons to `assets/icons/` or use the provided sample images.
+## Assets
+Place generated assets:
+- assets/icons/pin-guess.png
+- assets/icons/pin-actual.png
+- assets/icons/neon-globe.svg
+- assets/bg/aurora.mp4
+- assets/bg/stars.webp
+- assets/sounds/correct.mp3
+- assets/sounds/wrong.mp3
 
-Deployment
+## Notes
+- Movement in Street View is disabled for fairness (clickToGo=false, links hidden).
+- Timer auto-submits if no guess.
+- Fine-tune scoring thresholds in `script.js` if desired.
 
-Automatic deploy with GitHub Actions
-
-1. Push this repository to GitHub (to the `main` branch).
-2. The included GitHub Actions workflow (.github/workflows/gh-pages.yml) will automatically publish the repository root to the `gh-pages` branch on every push to `main`.
-3. Wait a minute for the action to finish, then enable GitHub Pages in the repository settings (select the `gh-pages` branch and `/ (root)` folder).
- Add MAPS_API_KEY secret (for secure deploy)
- 1. Go to your repository on GitHub → Settings → Secrets and variables → Actions → New repository secret
- 2. Name the secret: MAPS_API_KEY
- 3. Paste your Google Maps API key into the Value field and Save
- 4. Push any commit to `main` — the workflow will pick up the secret, write `config.js`, and deploy to `gh-pages`.
-
- Verify deployment
- 1. After the workflow finishes, open the workflow run logs and look for the "Deployment info" step — it will print the URL.
- 2. Or open: https://<your-github-username>.github.io/<repo>/ and verify the site loads and the map/streetview render.
-
-Manual quick deploy
-
+## License
+MIT

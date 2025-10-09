@@ -1,210 +1,241 @@
-/* Core game logic for World Explorer Quiz */
-const TOTAL_ROUNDS = 5;
+// script.js - Fixed version with proper initialization
+let rounds = 5;
+let currentRound = 0;
+let totalScore = 0;
+let roundData = [];
+let timerInterval = null;
+let timeLeft = 60;
+let isGoogleMapsLoaded = false;
 
-let state = {
-  currentRound: 0,
-  totalScore: 0,
-  rounds: [], // {actual:{lat,lng}, guess:{lat,lng}, distance, points}
-  currentActual: null,
-  currentGuess: null,
-};
-
-const dom = {
-  playBtn: document.getElementById('playBtn'),
-  restartBtn: document.getElementById('restartBtn'),
-  submitBtn: document.getElementById('submitBtn'),
-  nextBtn: document.getElementById('nextBtn'),
-  loading: document.getElementById('loading'),
-  roundNum: document.getElementById('roundNum'),
-  totalScore: document.getElementById('totalScore'),
-  overlay: document.getElementById('overlay'),
-  summary: document.getElementById('summary'),
-  summaryTitle: document.getElementById('summaryTitle'),
-  summaryContent: document.getElementById('summaryContent'),
-  closeSummary: document.getElementById('closeSummary')
-};
-
-function resetGame(){
-  state.currentRound = 0;
-  state.totalScore = 0;
-  state.rounds = [];
-  dom.totalScore.textContent = '0';
-  dom.roundNum.textContent = '0';
-  dom.restartBtn.hidden = true;
+function calculateDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = ((lat2 - lat1) * Math.PI) / 180;
+  const dLon = ((lon2 - lon1) * Math.PI) / 180;
+  const a = Math.sin(dLat / 2) ** 2 + Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) * Math.sin(dLon / 2) ** 2;
+  return R * 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
 }
 
-function startGame(){
-  // Validate Maps API availability
-  if (!(window.google && window.google.maps && window.google.maps.StreetViewService)){
-    const el = document.getElementById('apiHint');
-    if (el){
-      el.classList.remove('hidden');
-      el.textContent = 'Google Maps API or Street View Service is not loaded. Add your API key to config.js and enable Maps JS API in Google Cloud.';
-    } else {
-      alert('Google Maps JavaScript API or Street View Service is not loaded. Please add your API key to config.js and ensure the Maps JS API is enabled.');
-    }
-    console.error('Maps or StreetViewService not available:', !!window.google && !!window.google.maps, !!(window.google && window.google.maps && window.google.maps.StreetViewService));
-    return;
-  }
-  resetGame();
-  dom.playBtn.hidden = true;
-  dom.restartBtn.hidden = false;
-  nextRound();
+function scoreFromDistance(km) {
+  if (km < 100) return 1000;
+  if (km < 500) return 850;
+  if (km < 1000) return 700;
+  if (km < 3000) return 500;
+  if (km < 7000) return 300;
+  return 100;
 }
 
-function nextRound(){
-  state.currentRound += 1;
-  dom.roundNum.textContent = state.currentRound;
-  dom.submitBtn.disabled = true;
-  dom.nextBtn.disabled = true;
-  dom.loading.classList.remove('hidden');
-  // Clear map markers/lines
-  MapHandler.clearRound();
-  state.currentActual = null;
-  state.currentGuess = null;
-  // fetch a valid street view and render with a safety timeout
-  let roundTimedOut = false;
-  const TIMEOUT = 12000; // 12s
-  const timeoutHandle = setTimeout(()=>{
-    roundTimedOut = true;
-    dom.loading.classList.add('hidden');
-    StreetViewHandler.showStreetViewError && StreetViewHandler.showStreetViewError('Took too long to find a panorama. Click the Street View area to retry.');
-  }, TIMEOUT);
-
-  const onFound = (latLng, panorama) => {
-    if (roundTimedOut) return; // ignore late responses
-    clearTimeout(timeoutHandle);
-    state.currentActual = { lat: latLng.lat(), lng: latLng.lng() };
-    const pano = StreetViewHandler.renderPanorama(document.getElementById('streetview'), panorama);
-    // enable map clicking
-    MapHandler.enableGuessing(onMapGuess);
-    dom.loading.classList.add('hidden');
-  };
-
-  StreetViewHandler.getValidStreetViewLocation(onFound);
-
-  // allow clicking the overlay to retry the current round
-  const retryHandler = () => {
-    if (roundTimedOut) {
-      dom.loading.classList.remove('hidden');
-      roundTimedOut = false;
-      // restart the round fetch
-      StreetViewHandler.getValidStreetViewLocation(onFound);
-    }
-  };
-  window.addEventListener('svRetryRequested', retryHandler, { once: true });
-}
-
-function onMapGuess(latLng){
-  state.currentGuess = { lat: latLng.lat(), lng: latLng.lng() };
-  dom.submitBtn.disabled = false;
-}
-
-function submitGuess(){
-  if (!state.currentGuess || !state.currentActual) return;
-  // freeze further guessing
-  MapHandler.disableGuessing();
-  const d = calculateDistance(state.currentActual.lat, state.currentActual.lng, state.currentGuess.lat, state.currentGuess.lng); // meters
-  const pts = pointsForDistance(d);
-  state.totalScore += pts;
-  state.rounds.push({ actual: state.currentActual, guess: state.currentGuess, distance: d, points: pts });
-  dom.totalScore.textContent = state.totalScore;
-
-  // show markers and line
-  MapHandler.showActualAndGuess(state.currentActual, state.currentGuess);
-
-  // show summary overlay for this round
-  dom.summaryTitle.textContent = `Round ${state.currentRound} Result`;
-  const distStr = d < 1000 ? `${Math.round(d)} m` : `${(d/1000).toFixed(2)} km`;
-  dom.summaryContent.innerHTML = `<p>Distance: ${distStr}</p><p>Points: ${pts}</p>`;
-  dom.overlay.classList.remove('hidden');
-
-  dom.nextBtn.disabled = false;
-  dom.submitBtn.disabled = true;
-}
-
-function endRoundAndContinue(){
-  dom.overlay.classList.add('hidden');
-  if (state.currentRound >= TOTAL_ROUNDS){
-    showFinalSummary();
-  } else {
-    nextRound();
-  }
-}
-
-function showFinalSummary(){
-  dom.summaryTitle.textContent = `Game Summary`;
-  let html = `<p>Total Score: ${state.totalScore}</p>`;
-  html += `<table class="table-summary"><thead><tr><th>Round</th><th>Distance (km)</th><th>Points</th></tr></thead><tbody>`;
-  state.rounds.forEach((r,i)=>{
-    const km = (r.distance/1000).toFixed(2);
-    html += `<tr><td>${i+1}</td><td>${km}</td><td>${r.points}</td></tr>`;
-  });
-  html += `</tbody></table>`;
-  dom.summaryContent.innerHTML = html;
-  dom.overlay.classList.remove('hidden');
-}
-
-function calculateDistance(lat1, lon1, lat2, lon2){
-  // Haversine formula (returns meters)
-  const toNum = v => Number(v) || 0;
-  lat1 = toNum(lat1); lon1 = toNum(lon1); lat2 = toNum(lat2); lon2 = toNum(lon2);
-  const R = 6371e3; // metres
-  const toRad = a => a * Math.PI / 180;
-  const dLat = toRad(lat2 - lat1);
-  const dLon = toRad(lon2 - lon1);
-  const a = Math.sin(dLat/2) * Math.sin(dLat/2) + Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) * Math.sin(dLon/2) * Math.sin(dLon/2);
-  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a));
-  const meters = R * c;
-  if (!isFinite(meters) || meters < 0) return 0;
-  return meters;
-}
-
-function pointsForDistance(meters){
-  // Scoring tiers (meters)
-  // <=100m: 5000
-  // <=1000m: 3000
-  // <=10000m (10km): 1000
-  // <=50000m (50km): 500
-  // <=200000m (200km): 250
-  // <=500000m (500km): 100
-  // >500km: 0
-  const m = Math.max(0, Number(meters) || 0);
-  if (m <= 100) return 5000;
-  if (m <= 1000) return 3000;
-  if (m <= 10000) return 1000;
-  if (m <= 50000) return 500;
-  if (m <= 200000) return 250;
-  if (m <= 500000) return 100;
+function timeBonus(seconds) {
+  if (seconds >= 45) return 100;
+  if (seconds >= 30) return 60;
+  if (seconds >= 15) return 30;
   return 0;
 }
 
-// wire up buttons
-dom.playBtn.addEventListener('click', ()=>{
-  // mark todo in-progress -> complete
-  startGame();
-  // update todo list: mark current as completed and set next in-progress
-});
-dom.restartBtn.addEventListener('click', ()=>{ resetGame(); dom.playBtn.hidden=false; dom.restartBtn.hidden=true; });
-dom.submitBtn.addEventListener('click', submitGuess);
-dom.nextBtn.addEventListener('click', ()=>{ endRoundAndContinue(); });
-dom.closeSummary.addEventListener('click', ()=>{ dom.overlay.classList.add('hidden'); });
+function updateHeader() {
+  document.getElementById('current-round').textContent = `${currentRound}/${rounds}`;
+  document.getElementById('current-score').textContent = `${totalScore}`;
+}
 
-// Diagnostics: test Maps JS URL and display error information
-// Remove diagnostics UI for production. Map overlay will still show if tiles fail to load.
+function setLoading(state) {
+  document.getElementById('loading-screen').classList.toggle('hidden', !state);
+}
 
-// When overlay is visible during final summary, change Play Again behavior
-const observer = new MutationObserver(()=>{
-  // if overlay visible and we've finished rounds, show play again button
-  const visible = !dom.overlay.classList.contains('hidden');
-  if (visible && state.currentRound >= TOTAL_ROUNDS){
-    dom.restartBtn.hidden = false;
+function startTimer() {
+  timeLeft = 60;
+  document.getElementById('timer').textContent = `${timeLeft}s`;
+  clearInterval(timerInterval);
+  timerInterval = setInterval(() => {
+    timeLeft -= 1;
+    document.getElementById('timer').textContent = `${timeLeft}s`;
+    if (timeLeft <= 0) {
+      clearInterval(timerInterval);
+      autoSubmit();
+    }
+  }, 1000);
+}
+
+function autoSubmit() {
+  const guess = window.getGuessLatLng ? window.getGuessLatLng() : null;
+  if (!guess && window.placeGuess) {
+    window.placeGuess(new google.maps.LatLng(0, 0));
   }
-});
-observer.observe(dom.overlay, { attributes: true, attributeFilter: ['class'] });
+  const submitBtn = document.getElementById('submit-guess');
+  if (submitBtn && !submitBtn.disabled) {
+    submitBtn.click();
+  }
+}
 
-// Expose for handlers
-window.Game = {
-  calculateDistance,
-  pointsForDistance
-};
+async function startRound() {
+  if (!isGoogleMapsLoaded) {
+    console.error('Google Maps not loaded yet');
+    return;
+  }
+  
+  currentRound += 1;
+  updateHeader();
+  setLoading(true);
+  
+  if (window.clearRound) {
+    window.clearRound();
+  }
+  
+  try {
+    const latLng = await window.loadRandomPano();
+    setLoading(false);
+    startTimer();
+  } catch (error) {
+    console.error('Error loading panorama:', error);
+    setLoading(false);
+  }
+}
+
+function endRound(distanceKm, points) {
+  totalScore += points;
+  updateHeader();
+  document.getElementById('result-distance').textContent = `${distanceKm.toFixed(1)} km`;
+  document.getElementById('result-points').textContent = `${points}`;
+  document.getElementById('round-result').classList.remove('hidden');
+  document.getElementById('next-round').classList.remove('hidden');
+}
+
+function finalizeGame() {
+  document.getElementById('game-screen').classList.add('hidden');
+  document.getElementById('summary-screen').classList.remove('hidden');
+  document.getElementById('final-score').textContent = totalScore;
+  const rank = totalScore >= 3500 ? 'Globetrotter' : totalScore >= 2200 ? 'Traveler' : 'Wanderer';
+  document.getElementById('player-rank').textContent = `Rank: ${rank}`;
+  
+  // Create simple chart
+  const chart = document.getElementById('rounds-chart');
+  chart.innerHTML = '';
+  roundData.forEach((r, i) => {
+    const bar = document.createElement('div');
+    bar.style.cssText = `
+      height: ${Math.min(100, Math.max(10, 100 - r.distance / 100))}px;
+      width: 40px;
+      margin: 0 4px;
+      background: linear-gradient(180deg, rgba(255,191,0,0.8), rgba(255,191,0,0.2));
+      border-radius: 4px 4px 0 0;
+      position: relative;
+    `;
+    bar.title = `Round ${i + 1}: ${r.distance.toFixed(0)} km / ${r.points} pts`;
+    chart.appendChild(bar);
+  });
+}
+
+function attachUI() {
+  document.getElementById('start-btn').addEventListener('click', () => {
+    if (!isGoogleMapsLoaded) {
+      alert('Please wait for Google Maps to load...');
+      return;
+    }
+    document.getElementById('intro-screen').classList.add('hidden');
+    document.getElementById('game-screen').classList.remove('hidden');
+    startRound();
+  });
+
+  document.getElementById('submit-guess').addEventListener('click', () => {
+    clearInterval(timerInterval);
+    const actual = window.getCurrentPanoLatLng ? window.getCurrentPanoLatLng() : null;
+    const guess = window.getGuessLatLng ? window.getGuessLatLng() : null;
+    
+    if (!guess || !actual) {
+      console.error('Missing guess or actual location');
+      return;
+    }
+    
+    if (window.revealActual) {
+      window.revealActual(actual);
+    }
+    
+    const distance = calculateDistance(guess.lat(), guess.lng(), actual.lat(), actual.lng());
+    const points = scoreFromDistance(distance) + timeBonus(timeLeft);
+    roundData.push({ distance, points, actual: actual.toJSON(), guess: guess.toJSON() });
+    endRound(distance, points);
+    
+    // Play sound feedback
+    playSound(points >= 700 ? 'correct' : 'wrong');
+  });
+
+  document.getElementById('next-round').addEventListener('click', () => {
+    document.getElementById('round-result').classList.add('hidden');
+    document.getElementById('next-round').classList.add('hidden');
+    if (currentRound >= rounds) {
+      finalizeGame();
+    } else {
+      startRound();
+    }
+  });
+
+  document.getElementById('play-again').addEventListener('click', () => {
+    currentRound = 0;
+    totalScore = 0;
+    roundData = [];
+    updateHeader();
+    document.getElementById('summary-screen').classList.add('hidden');
+    document.getElementById('game-screen').classList.remove('hidden');
+    startRound();
+  });
+
+  document.getElementById('share-score').addEventListener('click', async () => {
+    const text = `GeoSphere Challenge: Scored ${totalScore} in ${rounds} rounds! 🌍✨`;
+    if (navigator.share) {
+      try {
+        await navigator.share({ title: 'GeoSphere Challenge', text, url: location.href });
+      } catch (err) {
+        console.log('Share cancelled');
+      }
+    } else {
+      navigator.clipboard.writeText(text);
+      alert('Score copied to clipboard!');
+    }
+  });
+
+  document.getElementById('skip-round').addEventListener('click', () => {
+    if (window.placeGuess) {
+      window.placeGuess(new google.maps.LatLng(0, 0));
+    }
+    document.getElementById('submit-guess').click();
+  });
+}
+
+function playSound(type) {
+  try {
+    const el = new Audio(type === 'correct' ? 'assets/sounds/correct.mp3' : 'assets/sounds/wrong.mp3');
+    el.volume = 0.35;
+    el.play().catch(e => console.log('Audio play failed:', e));
+  } catch (error) {
+    console.log('Audio not available:', error);
+  }
+}
+
+// This function will be called by Google Maps API
+function initApp() {
+  console.log('Initializing GeoSphere Challenge...');
+  
+  try {
+    if (typeof google === 'undefined') {
+      console.error('Google Maps API not loaded');
+      return;
+    }
+    
+    // Initialize components
+    if (window.initStreetView) {
+      window.initStreetView('streetview');
+    }
+    
+    if (window.initMap) {
+      window.initMap('map');
+    }
+    
+    isGoogleMapsLoaded = true;
+    attachUI();
+    console.log('GeoSphere Challenge initialized successfully!');
+    
+  } catch (error) {
+    console.error('Error initializing app:', error);
+  }
+}
+
+// Make initApp globally available
+window.initApp = initApp;

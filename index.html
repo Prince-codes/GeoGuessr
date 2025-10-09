@@ -1,93 +1,169 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>World Explorer Quiz</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;800&family=Poppins:wght@300;400;600&display=swap" rel="stylesheet">
-    <link rel="stylesheet" href="style.css" />
-  </head>
-  <body>
-    <div id="app" class="container">
-      <header class="topbar glass">
-        <div class="logo">
-          <img src="assets/icons/globe.svg" alt="logo" />
-          <h1>World Explorer Quiz</h1>
-        </div>
-        <div class="controls">
-          <button id="playBtn" class="btn amber">Play</button>
-          <button id="restartBtn" class="btn" hidden>Play Again</button>
-        </div>
-      </header>
-
-      <main class="main grid">
-        <section class="left glass" id="streetviewPane">
-          <div id="streetview" class="sv"></div>
-          <div id="loading" class="loading hidden">Loading location...</div>
-        </section>
-
-        <section class="right glass" id="mapPane">
-          <div id="map" class="map"></div>
-          <div id="mapOverlay" class="map-overlay hidden">Map tiles not loaded yet. Click "Run Diagnostics" or check your API key.</div>
-        </section>
-      </main>
-
-      <footer class="bottom glass">
-        <div class="scoreboard">
-          <div>Round <span id="roundNum">0</span>/5</div>
-          <div>Score: <span id="totalScore">0</span></div>
-        </div>
-        <div class="actions">
-          <button id="submitBtn" class="btn amber" disabled>Submit Guess</button>
-          <button id="nextBtn" class="btn" disabled>Next Round</button>
-        </div>
-      </footer>
-
-      <div id="overlay" class="overlay hidden">
-        <div class="modal glass" id="summary">
-          <h2 id="summaryTitle">Round Result</h2>
-          <div id="summaryContent"></div>
-          <div class="modalActions">
-            <button id="closeSummary" class="btn">Close</button>
-          </div>
-        </div>
-      </div>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🌌 GeoSphere Challenge - Immersive AI-Driven Global Guessing Game</title>
+    <meta name="description" content="GeoSphere Challenge – Explore the world from your screen and guess where you are!">
+    <meta name="theme-color" content="#FFBF00">
+    
+    <!-- Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <!-- Aurora Background -->
+    <div class="aurora-background">
+        <div class="aurora-gradient"></div>
+        <div class="stars-overlay"></div>
     </div>
 
-    <script src="config.js"></script>
-    <!-- Load Google Maps JS API ASAP using the key in config.js -->
-    <script>
-      (function(){
-        try{
-          const hint = () => document.getElementById('apiHint');
-          if (typeof GOOGLE_MAPS_API_KEY === 'string' && GOOGLE_MAPS_API_KEY.length>8) {
-            const s = document.createElement('script');
-            // use callback so we can initialize MapHandler when API is ready
-            // follow Google recommended loading pattern: include loading=async
-            s.src = `https://maps.googleapis.com/maps/api/js?key=${GOOGLE_MAPS_API_KEY}&libraries=places&v=weekly&callback=initMapHandler&loading=async`;
-            s.async = true;
-            s.defer = true;
-            // also set loading attribute (some browsers / validators use this)
-            try{ s.setAttribute('loading','async'); }catch(e){}
-            s.onerror = (ev) => {
-              window.__mapsScriptError = ev || { message: 'Script load error' };
-              const el = hint(); if (el) { el.classList.remove('hidden'); el.textContent = 'Failed to load Google Maps JS. Check network and API key.'; }
-            };
-            document.head.appendChild(s);
-          } else {
-            const el = hint(); if (el) el.classList.remove('hidden');
-            console.warn('Google Maps API key missing or too short. Add it to config.js');
-          }
-        }catch(e){console.error(e)}
-      })();
-    </script>
+    <!-- Intro Screen -->
+    <div id="intro-screen" class="intro-screen">
+        <div class="intro-content">
+            <div class="neon-globe">
+                <div class="globe-icon spinning-globe">🌍</div>
+            </div>
+            <h1 class="game-title">🌌 GeoSphere Challenge</h1>
+            <p class="game-subtitle">Immersive AI-Driven Global Guessing Game</p>
+            <button id="start-btn" class="neon-button start-button">
+                <span>Start Exploring</span>
+                <div class="button-glow"></div>
+            </button>
+        </div>
+        <div class="floating-particles"></div>
+    </div>
 
-    <!-- App scripts (deferred) -->
-    <script src="mapHandler.js" defer></script>
-    <script src="streetviewHandler.js" defer></script>
-    <script src="script.js" defer></script>
-    <!-- Diagnostics and hints removed for production deploy -->
-  </body>
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen hidden">
+        <div class="loading-content">
+            <div class="spinning-globe-loader">
+                <div class="globe-icon">🌍</div>
+            </div>
+            <h2 class="loading-text">Finding a location...</h2>
+            <div class="loading-bar">
+                <div class="loading-progress"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Screen -->
+    <div id="game-screen" class="game-screen hidden">
+        <!-- Header -->
+        <header class="game-header">
+            <div class="logo">
+                <span class="header-logo">🌍</span>
+                <span>GeoSphere</span>
+            </div>
+            <div class="game-stats">
+                <div class="stat-item">
+                    <span class="stat-label">Round</span>
+                    <span id="current-round" class="stat-value neon-text">1/5</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Score</span>
+                    <span id="current-score" class="stat-value neon-text">0</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-label">Time</span>
+                    <span id="timer" class="stat-value neon-text">60s</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Main Game Area -->
+        <main class="game-main">
+            <!-- Street View Panel -->
+            <div class="streetview-panel glass-panel">
+                <div id="streetview" class="streetview-container"></div>
+                <div class="streetview-overlay">
+                    <div class="hint-text">🌍 Look around and explore this location</div>
+                </div>
+            </div>
+
+            <!-- Map Panel -->
+            <div class="map-panel glass-panel">
+                <div class="map-header">
+                    <h3>🗺️ Where do you think you are?</h3>
+                    <div class="map-instructions">Click on the map to make your guess</div>
+                </div>
+                <div id="map" class="map-container"></div>
+                <div class="guess-indicator" id="guess-indicator">
+                    <span>📍 Click to place your guess</span>
+                </div>
+            </div>
+        </main>
+
+        <!-- Controls Panel -->
+        <div class="controls-panel glass-panel">
+            <button id="submit-guess" class="neon-button control-button" disabled>
+                <span>Submit Guess</span>
+                <div class="button-glow"></div>
+            </button>
+            <button id="next-round" class="neon-button control-button hidden">
+                <span>Next Round</span>
+                <div class="button-glow"></div>
+            </button>
+            <button id="skip-round" class="skip-button">
+                <span>Skip</span>
+            </button>
+        </div>
+
+        <!-- Round Result Modal -->
+        <div id="round-result" class="round-result hidden">
+            <div class="result-content glass-panel">
+                <h3 class="result-title">Round Complete!</h3>
+                <div class="result-stats">
+                    <div class="result-item">
+                        <span class="result-label">Distance:</span>
+                        <span id="result-distance" class="result-value neon-text">0 km</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Points:</span>
+                        <span id="result-points" class="result-value neon-text">0</span>
+                    </div>
+                </div>
+                <div class="beam-animation" id="beam-animation"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Game Summary Screen -->
+    <div id="summary-screen" class="summary-screen hidden">
+        <div class="summary-content">
+            <h1 class="summary-title">🏆 Game Complete!</h1>
+            <div class="final-score">
+                <span class="score-label">Final Score</span>
+                <span id="final-score" class="score-value neon-text">0</span>
+            </div>
+            <div id="player-rank" class="player-rank"></div>
+            
+            <div class="rounds-summary glass-panel">
+                <h3>Round Summary</h3>
+                <div id="rounds-chart" class="rounds-chart"></div>
+            </div>
+
+            <div class="summary-actions">
+                <button id="play-again" class="neon-button">
+                    <span>Play Again</span>
+                    <div class="button-glow"></div>
+                </button>
+                <button id="share-score" class="neon-button">
+                    <span>Share Score</span>
+                    <div class="button-glow"></div>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Scripts - Load in correct order -->
+    <script src="config.js"></script>
+    <script src="streetviewHandler.js"></script>
+    <script src="mapHandler.js"></script>
+    <script src="script.js"></script>
+    <!-- Load Google Maps API with proper async loading -->
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDIUNl6JcnYJOmz_sXXhQj4Oom4TIzZuT0&libraries=geometry&callback=initApp&loading=async"></script>
+</body>
 </html>
