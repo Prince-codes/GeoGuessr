@@ -128,7 +128,7 @@ Notes on security: restrict your API key to the specific domain(s) or local deve
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-© 2025 Prince Raj Singh (Group Carnage Sentinels) · SPDX: MIT
+© 2025 Prince Raj Singh, K. Harish (Group Carnage Sentinels) · SPDX: MIT
 
 This project is released under the MIT License. 
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is furnished to do so, subject to the following conditions:
