@@ -1,4 +1,3 @@
-// script.js - Fixed version with proper initialization
 let rounds = 5;
 let currentRound = 0;
 let totalScore = 0;
@@ -124,11 +123,14 @@ function finalizeGame() {
 }
 
 function attachUI() {
-  document.getElementById('start-btn').addEventListener('click', () => {
+  const startBtn = document.getElementById('start-btn');
+  startBtn.addEventListener('click', () => {
     if (!isGoogleMapsLoaded) {
       alert('Please wait for Google Maps to load...');
       return;
     }
+    // Prevent double clicks
+    startBtn.disabled = true;
     document.getElementById('intro-screen').classList.add('hidden');
     document.getElementById('game-screen').classList.remove('hidden');
     startRound();
@@ -167,6 +169,21 @@ function attachUI() {
     }
   });
 
+  // 'Continue' button inside round-result modal (some markup uses a different id)
+  const nextAfter = document.getElementById('next-after-result');
+  if (nextAfter) {
+    nextAfter.addEventListener('click', () => {
+      // Reuse next-round handler behavior
+      document.getElementById('round-result').classList.add('hidden');
+      document.getElementById('next-round').classList.add('hidden');
+      if (currentRound >= rounds) {
+        finalizeGame();
+      } else {
+        startRound();
+      }
+    });
+  }
+
   document.getElementById('play-again').addEventListener('click', () => {
     currentRound = 0;
     totalScore = 0;
@@ -197,6 +214,36 @@ function attachUI() {
     }
     document.getElementById('submit-guess').click();
   });
+
+  // Watch for a placed guess (if mapHandler exposes getGuessLatLng)
+  // Enables submit button when a guess is available and disables it after submit to avoid duplicates
+  let lastGuessKey = null;
+  const submitBtn = document.getElementById('submit-guess');
+  const guessIndicator = document.getElementById('guess-indicator');
+
+  setInterval(() => {
+    try {
+      if (typeof window.getGuessLatLng === 'function') {
+        const g = window.getGuessLatLng();
+        if (g && typeof g.lat === 'function' && typeof g.lng === 'function') {
+          const key = `${g.lat().toFixed(6)},${g.lng().toFixed(6)}`;
+          if (key !== lastGuessKey) {
+            lastGuessKey = key;
+            // enable submit
+            if (submitBtn) submitBtn.disabled = false;
+            if (guessIndicator) guessIndicator.style.opacity = '1';
+          }
+        } else {
+          // no guess placed
+          if (submitBtn) submitBtn.disabled = true;
+          if (guessIndicator) guessIndicator.style.opacity = '0.7';
+          lastGuessKey = null;
+        }
+      }
+    } catch (e) {
+      // ignore
+    }
+  }, 350);
 }
 
 function playSound(type) {

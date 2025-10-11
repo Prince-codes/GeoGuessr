@@ -1,169 +1,175 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>🌌 GeoSphere Challenge - Immersive AI-Driven Global Guessing Game</title>
-    <meta name="description" content="GeoSphere Challenge – Explore the world from your screen and guess where you are!">
-    <meta name="theme-color" content="#FFBF00">
-    
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
-    
-    <!-- Stylesheets -->
-    <link rel="stylesheet" href="style.css">
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>🌌 GeoSphere Challenge — Neon-Amber Aurora</title>
+  <meta name="description" content="GeoSphere Challenge – Explore the world from your screen and guess where you are!" />
+  <meta name="theme-color" content="#FFBF00" />
+
+  <!-- Fonts -->
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
+
+  <!-- Stylesheet (updated theme) -->
+  <link rel="stylesheet" href="style.css" />
 </head>
-<body>
-    <!-- Aurora Background -->
-    <div class="aurora-background">
-        <div class="aurora-gradient"></div>
-        <div class="stars-overlay"></div>
+<body data-color-scheme="dark">
+  <!-- Aurora Background (multi-layer) -->
+  <div class="aurora-background" aria-hidden="true">
+    <div class="aurora-layer aurora-layer-1"></div>
+    <div class="aurora-layer aurora-layer-2"></div>
+    <div class="aurora-layer aurora-layer-3"></div>
+    <canvas id="particle-canvas" class="particle-canvas"></canvas>
+  </div>
+
+  <!-- Intro Screen -->
+  <div id="intro-screen" class="intro-screen">
+    <div class="intro-card glass-panel">
+      <div class="brand-row">
+        <div class="neon-badge">
+          <div class="globe-emoji">🌍</div>
+        </div>
+        <div class="brand-title">
+          <h1 class="game-title">GeoSphere Challenge</h1>
+          <p class="game-subtitle">Immersive AI-Driven Global Guessing Game</p>
+        </div>
+      </div>
+
+      <div class="intro-actions">
+        <button id="start-btn" class="btn btn--primary neon-btn">
+          <span>Start Exploring</span>
+          <span class="btn-glow"></span>
+        </button>
+
+        <div class="meta-row">
+          <span class="meta-pill">Rounds: <strong>5</strong></span>
+          <span class="meta-pill">Timer: <strong>60s</strong></span>
+          <span class="meta-pill">Mode: <strong>Casual</strong></span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading Screen -->
+  <div id="loading-screen" class="loading-screen hidden" aria-hidden="true">
+    <div class="loading-card glass-panel">
+      <div class="loader-globe">🌍</div>
+      <div class="loading-text">Finding a location...</div>
+      <div class="loading-bar">
+        <div class="loading-progress"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="game-screen" class="game-screen hidden">
+    <header class="game-header glass-panel">
+      <div class="logo">
+        <div class="header-logo">🌍</div>
+        <div class="header-name">GeoSphere</div>
+      </div>
+      <nav class="header-controls">
+        <div class="game-stats">
+          <div class="stat-item">
+            <small class="stat-label">Round</small>
+            <div id="current-round" class="stat-value neon-text">1/5</div>
+          </div>
+          <div class="stat-item">
+            <small class="stat-label">Score</small>
+            <div id="current-score" class="stat-value neon-text">0</div>
+          </div>
+          <div class="stat-item">
+            <small class="stat-label">Time</small>
+            <div id="timer" class="stat-value neon-text">60s</div>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <main class="game-main">
+      <!-- Street View Panel -->
+      <section class="streetview-panel glass-panel">
+        <div id="streetview" class="streetview-container" aria-label="Street View"></div>
+        <div class="streetview-overlay">
+          <div class="hint">🌍 Look around — click & drag to explore</div>
+        </div>
+        <div class="panel-halo"></div>
+      </section>
+
+      <!-- Map Panel -->
+      <aside class="map-panel glass-panel">
+        <div class="map-header">
+          <h3>🗺️ Where do you think you are?</h3>
+          <p class="map-instructions">Click on the map to place your guess. Zoom & pan to refine.</p>
+        </div>
+        <div id="map" class="map-container" aria-label="Map"></div>
+        <div id="guess-indicator" class="guess-indicator">📍 Click to place your guess</div>
+        <div class="panel-halo"></div>
+      </aside>
+    </main>
+
+    <!-- Controls -->
+    <div class="controls-panel glass-panel">
+      <button id="submit-guess" class="btn neon-btn" disabled>
+        <span>Submit Guess</span><span class="btn-glow"></span>
+      </button>
+      <button id="next-round" class="btn neon-btn hidden">
+        <span>Next Round</span><span class="btn-glow"></span>
+      </button>
+      <button id="skip-round" class="btn btn--outline">Skip</button>
     </div>
 
-    <!-- Intro Screen -->
-    <div id="intro-screen" class="intro-screen">
-        <div class="intro-content">
-            <div class="neon-globe">
-                <div class="globe-icon spinning-globe">🌍</div>
-            </div>
-            <h1 class="game-title">🌌 GeoSphere Challenge</h1>
-            <p class="game-subtitle">Immersive AI-Driven Global Guessing Game</p>
-            <button id="start-btn" class="neon-button start-button">
-                <span>Start Exploring</span>
-                <div class="button-glow"></div>
-            </button>
+    <!-- Round Result Modal -->
+    <div id="round-result" class="round-result hidden" role="dialog" aria-modal="true">
+      <div class="result-card glass-panel">
+        <h3 class="result-title">Round Complete!</h3>
+        <div class="result-stats">
+          <div class="result-item">
+            <small class="result-label">Distance</small>
+            <div id="result-distance" class="result-value neon-text">0 km</div>
+          </div>
+          <div class="result-item">
+            <small class="result-label">Points</small>
+            <div id="result-points" class="result-value neon-text">0</div>
+          </div>
         </div>
-        <div class="floating-particles"></div>
+        <div id="beam-animation" class="beam-animation"></div>
+        <div class="result-actions">
+          <button id="next-after-result" class="btn neon-btn"><span>Continue</span><span class="btn-glow"></span></button>
+        </div>
+      </div>
     </div>
+  </div>
 
-    <!-- Loading Screen -->
-    <div id="loading-screen" class="loading-screen hidden">
-        <div class="loading-content">
-            <div class="spinning-globe-loader">
-                <div class="globe-icon">🌍</div>
-            </div>
-            <h2 class="loading-text">Finding a location...</h2>
-            <div class="loading-bar">
-                <div class="loading-progress"></div>
-            </div>
-        </div>
+  <!-- Summary -->
+  <div id="summary-screen" class="summary-screen hidden">
+    <div class="summary-card glass-panel">
+      <h1 class="summary-title">🏆 Game Complete!</h1>
+      <div class="final-score">
+        <div class="score-label">Final Score</div>
+        <div id="final-score" class="score-value neon-text">0</div>
+      </div>
+      <div id="player-rank" class="player-rank"></div>
+
+      <div class="rounds-summary glass-panel inner">
+        <h4>Round Summary</h4>
+        <div id="rounds-chart" class="rounds-chart"></div>
+      </div>
+
+      <div class="summary-actions">
+        <button id="play-again" class="btn neon-btn"><span>Play Again</span><span class="btn-glow"></span></button>
+        <button id="share-score" class="btn btn--outline">Share Score</button>
+      </div>
     </div>
+  </div>
 
-    <!-- Game Screen -->
-    <div id="game-screen" class="game-screen hidden">
-        <!-- Header -->
-        <header class="game-header">
-            <div class="logo">
-                <span class="header-logo">🌍</span>
-                <span>GeoSphere</span>
-            </div>
-            <div class="game-stats">
-                <div class="stat-item">
-                    <span class="stat-label">Round</span>
-                    <span id="current-round" class="stat-value neon-text">1/5</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Score</span>
-                    <span id="current-score" class="stat-value neon-text">0</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-label">Time</span>
-                    <span id="timer" class="stat-value neon-text">60s</span>
-                </div>
-            </div>
-        </header>
+  <!-- Keep JS include order (no changes so your scripts work) -->
+  <script src="config.js"></script>
+  <script src="streetviewHandler.js"></script>
+  <script src="mapHandler.js"></script>
+  <script src="script.js"></script>
 
-        <!-- Main Game Area -->
-        <main class="game-main">
-            <!-- Street View Panel -->
-            <div class="streetview-panel glass-panel">
-                <div id="streetview" class="streetview-container"></div>
-                <div class="streetview-overlay">
-                    <div class="hint-text">🌍 Look around and explore this location</div>
-                </div>
-            </div>
-
-            <!-- Map Panel -->
-            <div class="map-panel glass-panel">
-                <div class="map-header">
-                    <h3>🗺️ Where do you think you are?</h3>
-                    <div class="map-instructions">Click on the map to make your guess</div>
-                </div>
-                <div id="map" class="map-container"></div>
-                <div class="guess-indicator" id="guess-indicator">
-                    <span>📍 Click to place your guess</span>
-                </div>
-            </div>
-        </main>
-
-        <!-- Controls Panel -->
-        <div class="controls-panel glass-panel">
-            <button id="submit-guess" class="neon-button control-button" disabled>
-                <span>Submit Guess</span>
-                <div class="button-glow"></div>
-            </button>
-            <button id="next-round" class="neon-button control-button hidden">
-                <span>Next Round</span>
-                <div class="button-glow"></div>
-            </button>
-            <button id="skip-round" class="skip-button">
-                <span>Skip</span>
-            </button>
-        </div>
-
-        <!-- Round Result Modal -->
-        <div id="round-result" class="round-result hidden">
-            <div class="result-content glass-panel">
-                <h3 class="result-title">Round Complete!</h3>
-                <div class="result-stats">
-                    <div class="result-item">
-                        <span class="result-label">Distance:</span>
-                        <span id="result-distance" class="result-value neon-text">0 km</span>
-                    </div>
-                    <div class="result-item">
-                        <span class="result-label">Points:</span>
-                        <span id="result-points" class="result-value neon-text">0</span>
-                    </div>
-                </div>
-                <div class="beam-animation" id="beam-animation"></div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Game Summary Screen -->
-    <div id="summary-screen" class="summary-screen hidden">
-        <div class="summary-content">
-            <h1 class="summary-title">🏆 Game Complete!</h1>
-            <div class="final-score">
-                <span class="score-label">Final Score</span>
-                <span id="final-score" class="score-value neon-text">0</span>
-            </div>
-            <div id="player-rank" class="player-rank"></div>
-            
-            <div class="rounds-summary glass-panel">
-                <h3>Round Summary</h3>
-                <div id="rounds-chart" class="rounds-chart"></div>
-            </div>
-
-            <div class="summary-actions">
-                <button id="play-again" class="neon-button">
-                    <span>Play Again</span>
-                    <div class="button-glow"></div>
-                </button>
-                <button id="share-score" class="neon-button">
-                    <span>Share Score</span>
-                    <div class="button-glow"></div>
-                </button>
-            </div>
-        </div>
-    </div>
-
-    <!-- Scripts - Load in correct order -->
-    <script src="config.js"></script>
-    <script src="streetviewHandler.js"></script>
-    <script src="mapHandler.js"></script>
-    <script src="script.js"></script>
-    <!-- Load Google Maps API with proper async loading -->
-    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDIUNl6JcnYJOmz_sXXhQj4Oom4TIzZuT0&libraries=geometry&callback=initApp&loading=async"></script>
+  <!-- Google Maps (keeps your key as-is) -->
+  <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDIUNl6JcnYJOmz_sXXhQj4Oom4TIzZuT0&libraries=geometry&callback=initApp"></script>
 </body>
 </html>
