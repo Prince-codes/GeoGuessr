@@ -23,6 +23,9 @@ function getValidStreetView(callback){
 }
 
 function initStreetView(containerId){
+  const streetViewContainer = document.getElementById(containerId);
+
+  streetViewContainer.style.filter = 'invert(100%)';
   panorama = new google.maps.StreetViewPanorama(document.getElementById(containerId),{
     disableDefaultUI:true,
     clickToGo:false,

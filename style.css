@@ -1,305 +1,610 @@
-/* Neon-Amber Aurora theme for GeoSphere */
-/* Replace your style.css with this file. Color system keeps dark mode as default. */
-
-/* -----------------------
-   DESIGN TOKENS
-   ----------------------- */
+/* GeoSphere Challenge - Light Glassmorphism Theme */
+/* Clean, performant glass effects with better visibility */
+/* AI Song - Dark Purple Theme */
 :root {
-  --licorice-900: #07060a;       /* deep background */
-  --licorice-800: #0a0a0f;
-  --glass-bleed: rgba(255,255,255,0.03);
-
-  --amber: #FFBF00;              /* primary warm accent */
-  --cyan: #00FFF2;               /* secondary cool accent */
-  --amber-rgb: 255,191,0;
-  --cyan-rgb: 0,255,242;
-
-  --muted-1: rgba(255,255,255,0.06);
-  --muted-2: rgba(255,255,255,0.04);
-  --card-surface: rgba(10,10,12,0.6);
-
-  --glass-bg: rgba(12,12,16,0.46);
-  --glass-border: rgba(255,255,255,0.06);
-
-  --text: rgba(245,245,250,0.95);
-  --text-muted: rgba(200,200,210,0.6);
-
+  --bg-primary: #0D0B14;
+  --bg-secondary: #110F19;
+  --bg-glass: rgba(28, 25, 38, 0.45); /* Dark, purple-tinted glass */
+  --glass-border: rgba(138, 79, 255, 0.2); /* Subtle purple border */
+  
+  --text-primary: #F0F0F8;
+  --text-secondary: #9A9AAB;
+  --text-muted: #6B6B78;
+  
+  --accent-primary: #8A4FFF; /* Main Bright Purple */
+  --accent-secondary: #5C67FF; /* Secondary Blue/Purple */
+  --accent-rgb: 138, 79, 255;
+  
   --radius-sm: 8px;
-  --radius-md: 14px;
-  --radius-lg: 18px;
-  --shadow-lg: 0 20px 50px rgba(0,0,0,0.6);
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  
+  --shadow-sm: 0 4px 12px rgba(0, 0, 0, 0.2);
+  --shadow-md: 0 8px 24px rgba(0, 0, 0, 0.3);
+  --shadow-glow: 0 0 24px rgba(138, 79, 255, 0.25); /* Purple glow */
 
-  --container-gap: 18px;
-  --ease: cubic-bezier(.16,1,.3,1);
-  --duration: 220ms;
-
-  font-family: "Poppins", "Montserrat", system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  font-family: "Poppins", "Inter", system-ui, sans-serif;
+}
+/* Base styles */
+html, body { 
+  height: 100%; 
+  margin: 0;
+  overflow: hidden;
 }
 
-/* Keep body and root sizing */
-html,body { height:100%; }
-* { box-sizing: border-box; -webkit-font-smoothing:antialiased; -moz-osx-font-smoothing:grayscale; }
+* { 
+  box-sizing: border-box; 
+  -webkit-font-smoothing: antialiased; 
+  
+}
 
-/* -----------------------
-   BACKGROUND: aurora + particles
-   ----------------------- */
 body {
-  margin:0;
-  color:var(--text);
-  background: linear-gradient(180deg, var(--licorice-900) 0%, #050409 100%);
-  overflow:hidden;
-  font-weight:400;
-  -webkit-font-smoothing:antialiased;
+  color: var(--text-primary);
+  /* Updated gradient to match the dark theme */
+  background: linear-gradient(135deg, var(--bg-primary) 0%, var(--bg-secondary) 100%);
+  overflow: hidden;
+  font-weight: 400;
 }
 
+/* Simple background with minimal particles */
 .aurora-background {
-  position:fixed; inset:0; z-index:-10; pointer-events:none; overflow:hidden;
+  position: fixed; 
+  inset: 0; 
+  z-index: -10; 
+  pointer-events: none;
+  /* Updated to use accent colors for a subtle purple glow */
+  background: linear-gradient(135deg, 
+      rgba(var(--accent-rgb), 0.05) 0%, 
+      rgba(92, 103, 255, 0.03) 100%);
 }
 
-/* layered aurora gradients */
-.aurora-layer {
-  position:absolute; left:-20%; top:-20%; width:140%; height:140%; filter: blur(40px); mix-blend-mode:screen; opacity:0.8;
-}
-.aurora-layer-1 {
-  background: radial-gradient(60% 40% at 20% 30%, rgba(var(--amber-rgb),0.08), transparent 20%),
-              linear-gradient(120deg, rgba(var(--cyan-rgb),0.04), rgba(var(--amber-rgb),0.06) 50%, rgba(120,60,255,0.03));
-  transform: rotate(-6deg);
-  animation: aurora-move 18s var(--ease) infinite;
-}
-.aurora-layer-2 {
-  background: linear-gradient(90deg, rgba(var(--cyan-rgb),0.02), rgba(var(--amber-rgb),0.03), rgba(255,100,200,0.01));
-  filter: blur(60px) saturate(120%);
-  opacity:0.6;
-  animation: aurora-move-rev 26s var(--ease) infinite;
-}
-.aurora-layer-3 {
-  background: radial-gradient(circle at 85% 10%, rgba(var(--cyan-rgb),0.03), transparent 10%),
-              radial-gradient(circle at 10% 90%, rgba(var(--amber-rgb),0.02), transparent 10%);
-  filter: blur(100px);
-  mix-blend-mode: screen;
-  opacity:0.5;
-}
-
-@keyframes aurora-move {
-  0% { transform: translateX(-8%) rotate(-6deg) scale(1); }
-  50% { transform: translateX(6%) rotate(3deg) scale(1.02); }
-  100% { transform: translateX(-8%) rotate(-6deg) scale(1); }
-}
-@keyframes aurora-move-rev {
-  0% { transform: translateX(4%) scale(1.02); }
-  50% { transform: translateX(-6%) scale(0.98); }
-  100% { transform: translateX(4%) scale(1.02); }
-}
-
-/* simple particle canvas sits over aurora (scripts can draw into this canvas) */
-.particle-canvas {
-  position:absolute; left:0; top:0; width:100%; height:100%; z-index:-5; opacity:0.6;
-}
-
-/* -----------------------
-   COMMON UI - glass surfaces, utility
-   ----------------------- */
+/* Clean glass panels */
 .glass-panel {
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+  background: var(--bg-glass);
   border: 1px solid var(--glass-border);
-  backdrop-filter: blur(10px) saturate(120%);
+  backdrop-filter: blur(12px);
   border-radius: var(--radius-lg);
-  box-shadow: var(--shadow-lg);
+  box-shadow: var(--shadow-sm);
+  transition: all 0.2s ease;
 }
 
-/* clickable button base */
+.glass-panel:hover {
+  box-shadow: var(--shadow-md), var(--shadow-glow);
+  border-color: rgba(255, 255, 255, 0.5);
+}
+
+/* Buttons */
 .btn {
-  display:inline-flex; align-items:center; justify-content:center;
-  gap:10px; padding:12px 18px; border-radius:12px; font-weight:600; cursor:pointer;
-  border:0; background:none; color:var(--text); position:relative; overflow:visible;
-  transition: transform var(--duration) var(--ease), box-shadow var(--duration) var(--ease);
-}
-
-/* outline / ghost */
-.btn--outline {
-  border:1px solid rgba(255,255,255,0.06);
-  background:transparent;
-  color:var(--text);
-}
-
-/* primary neon button: amber base with cyan shimmer */
-.btn--primary {
-  background: linear-gradient(90deg, rgba(var(--amber-rgb),0.12), rgba(var(--cyan-rgb),0.06));
-  border: 1px solid rgba(var(--amber-rgb),0.18);
-  color:#0b0b0b;
-  padding:12px 20px;
-  border-radius:14px;
-  box-shadow: 0 8px 30px rgba(var(--amber-rgb),0.12), 0 0 36px rgba(var(--cyan-rgb),0.07) inset;
-}
-
-/* neon button common style */
-.neon-btn {
-  background: linear-gradient(90deg, rgba(var(--amber-rgb),0.14), rgba(var(--cyan-rgb),0.06));
-  border-radius: 14px;
-  border: 1px solid rgba(255,255,255,0.04);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   padding: 12px 20px;
-  color: #071018;
-  font-weight:700;
-  letter-spacing:0.02em;
-}
-.neon-btn .btn-glow {
-  position:absolute; inset: -4px; border-radius:14px;
-  box-shadow: 0 0 36px rgba(var(--amber-rgb),0.14), 0 0 80px rgba(var(--cyan-rgb),0.06) inset;
-  pointer-events:none;
-  opacity:0.9;
+  border-radius: var(--radius-md);
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  background: none;
+  color: var(--text-primary);
+  transition: all 0.2s ease;
+  font-family: inherit;
 }
 
-/* hover effects */
-.btn:hover { transform: translateY(-3px); box-shadow: 0 20px 60px rgba(0,0,0,0.6); }
-.btn:active { transform: translateY(0); }
+.btn--primary {
+  background: var(--accent-primary);
+  color: white;
+  box-shadow: var(--shadow-sm);
+}
 
-/* text utilities */
+.btn--primary:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-md);
+}
+
+.btn--outline {
+  border: 1px solid var(--text-muted);
+  color: var(--text-secondary);
+  background: transparent;
+}
+
+.btn--outline:hover {
+  border-color: var(--accent-primary);
+  color: var(--accent-primary);
+}
+
+.neon-btn {
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  font-weight: 600;
+  position: relative;
+  overflow: hidden;
+}
+
+.neon-btn::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+  transition: left 0.5s ease;
+}
+
+.neon-btn:hover::before {
+  left: 100%;
+}
+
+/* Text */
 .neon-text {
-  color: rgba(var(--amber-rgb),1);
-  text-shadow: 0 6px 26px rgba(var(--amber-rgb),0.12), 0 0 12px rgba(var(--cyan-rgb),0.08);
-  font-weight:700;
+  color: var(--accent-primary);
+  font-weight: 700;
 }
 
-/* small pill meta */
 .meta-pill {
-  display:inline-block; padding:6px 10px; border-radius:999px; background:rgba(255,255,255,0.02);
-  color:var(--text-muted); font-size:13px; margin-right:8px;
+  display: inline-block;
+  padding: 6px 12px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.5);
+  color: var(--text-secondary);
+  font-size: 13px;
+  margin-right: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.3);
 }
 
-/* -----------------------
-   LAYOUT: pages & cards
-   ----------------------- */
+/* Intro Screen */
 .intro-screen {
-  position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:60;
-  padding:40px;
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 60;
+  padding: 20px;
 }
+
 .intro-card {
-  width:min(980px,96%); display:flex; flex-direction:column; gap:18px; padding:28px;
-  border-radius:20px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border:1px solid rgba(255,255,255,0.03);
+  width: min(600px, 90%);
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+  padding: 30px;
+}
+
+.brand-row {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.neon-badge {
+  width: 70px;
+  height: 70px;
+  border-radius: var(--radius-lg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--accent-primary), var(--accent-secondary));
+  color: white;
+  font-size: 28px;
+}
+
+.game-title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.game-subtitle {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 14px;
+}
+
+.intro-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  align-items: flex-start;
+}
+
+.meta-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
+/* Loading Screen */
+.loading-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 70;
+  background: rgba(255, 255, 255, 0.9);
   backdrop-filter: blur(8px);
 }
 
-/* brand row */
-.brand-row { display:flex; align-items:center; gap:18px; }
-.neon-badge { width:88px; height:88px; border-radius:16px; display:flex; align-items:center; justify-content:center;
-  background: linear-gradient(120deg, rgba(var(--cyan-rgb),0.06), rgba(var(--amber-rgb),0.08));
-  border:1px solid rgba(255,255,255,0.04);
-  box-shadow: 0 12px 46px rgba(0,0,0,0.6), 0 0 36px rgba(var(--amber-rgb),0.08);
+.loading-card {
+  width: 300px;
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  align-items: center;
 }
-.globe-emoji { font-size:36px; transform:rotate(-8deg); filter:drop-shadow(0 6px 22px rgba(var(--amber-rgb),0.12)); }
 
-.game-title { margin:0; font-size:28px; letter-spacing:-0.01em; font-weight:800; color:var(--text); text-shadow:0 6px 34px rgba(var(--cyan-rgb),0.04);}
-.game-subtitle { margin:0; color:var(--text-muted); font-size:14px; }
+.loader-globe {
+  font-size: 36px;
+}
 
-/* intro actions */
-.intro-actions { display:flex; flex-direction:column; gap:12px; align-items:flex-start; margin-top:6px; }
-.meta-row { display:flex; gap:10px; align-items:center; }
+.loading-bar {
+  width: 100%;
+  height: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
 
-/* loading screen */
-.loading-screen { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:70; background:linear-gradient(180deg, rgba(0,0,0,0.45), rgba(0,0,0,0.55)); }
-.loading-card { width:420px; padding:18px; display:flex; flex-direction:column; gap:12px; align-items:center; }
-.loader-globe { font-size:42px; filter:drop-shadow(0 12px 36px rgba(var(--cyan-rgb),0.12)); }
-.loading-bar { width:100%; height:10px; background:rgba(255,255,255,0.02); border-radius:999px; overflow:hidden; border:1px solid rgba(255,255,255,0.03); }
-.loading-progress { height:100%; width:20%; background:linear-gradient(90deg, rgba(var(--cyan-rgb),0.9), rgba(var(--amber-rgb),1)); filter:drop-shadow(0 8px 22px rgba(var(--cyan-rgb),0.14)); animation: loading-anim 1.4s linear infinite; }
-@keyframes loading-anim { from { transform:translateX(-10%);} to { transform:translateX(200%);} }
+.loading-progress {
+  height: 100%;
+  width: 30%;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  animation: loading 1.5s ease-in-out infinite;
+}
 
-/* header */
+@keyframes loading {
+  0% { transform: translateX(-100%); }
+  100% { transform: translateX(400%); }
+}
+
+/* Game Header */
 .game-header {
-  position:fixed; left:20px; right:20px; top:18px; height:68px;
-  display:flex; align-items:center; justify-content:space-between; padding:10px 18px;
-  z-index:80; border-radius:14px;
-  background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-  border:1px solid rgba(255,255,255,0.03);
-  backdrop-filter: blur(6px);
+  position: fixed;
+  left: 20px;
+  right: 20px;
+  top: 20px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 20px;
+  z-index: 80;
 }
-.logo { display:flex; align-items:center; gap:12px; font-weight:800; }
-.header-logo { font-size:22px; filter:drop-shadow(0 8px 36px rgba(var(--cyan-rgb),0.08)); }
-.header-name { font-size:18px; color:var(--text); }
 
-/* stats */
-.game-stats { display:flex; gap:18px; align-items:center; }
-.stat-item { display:flex; flex-direction:column; align-items:flex-end; }
-.stat-label { font-size:11px; color:var(--text-muted); }
-.stat-value { font-size:14px; font-weight:800; color:var(--text); }
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-weight: 700;
+}
 
-/* main layout */
+.header-logo {
+  font-size: 20px;
+}
+
+.header-name {
+  font-size: 18px;
+  color: var(--text-primary);
+}
+
+.game-stats {
+  display: flex;
+  gap: 20px;
+  align-items: center;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+}
+
+.stat-label {
+  font-size: 11px;
+  color: var(--text-muted);
+}
+
+.stat-value {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+/* Main Layout */
 .game-main {
-  position:fixed; top:96px; bottom:96px; left:20px; right:20px; display:grid; grid-template-columns: 1.8fr 1fr; gap:18px; z-index:40;
+  position: fixed;
+  top: 90px;
+  bottom: 90px;
+  left: 20px;
+  right: 20px;
+  display: grid;
+  grid-template-columns: 1.8fr 1fr;
+  gap: 16px;
+  z-index: 40;
 }
 
-/* panels */
 .streetview-panel, .map-panel {
-  position:relative; border-radius:14px; overflow:hidden; min-height:280px; background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.03));
-  border:1px solid rgba(255,255,255,0.03);
-}
-.streetview-container, .map-container { position:absolute; inset:0; background:transparent; }
-
-/* overlays and panel halo */
-.streetview-overlay { position:absolute; left:0; right:0; bottom:0; padding:14px; background: linear-gradient(180deg, transparent, rgba(0,0,0,0.6)); color:var(--text-muted); font-size:13px; pointer-events:none;}
-.map-header { position:absolute; left:14px; right:14px; top:12px; z-index:3; display:flex; flex-direction:column; gap:6px; background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01)); padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,0.03); backdrop-filter: blur(6px); }
-.map-instructions { margin:0; color:var(--text-muted); font-size:13px; }
-
-/* panel halo accent for neon edge */
-.panel-halo::after {
-  content:""; position:absolute; inset:0; pointer-events:none; border-radius:inherit;
-  box-shadow: 0 0 40px rgba(var(--cyan-rgb),0.06), 0 0 68px rgba(var(--amber-rgb),0.04) inset;
-  mix-blend-mode: screen;
+  position: relative;
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  min-height: 300px;
 }
 
-/* guess indicator */
-.guess-indicator { position:absolute; bottom:18px; left:50%; transform:translateX(-50%); padding:8px 12px; border-radius:12px; background:rgba(0,0,0,0.45); color:var(--text-muted); border:1px solid rgba(255,255,255,0.03); }
+.streetview-container, .map-container {
+  position: absolute;
+  inset: 0;
+  background: transparent;
+}
 
-/* controls bottom */
+.streetview-overlay {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  padding: 16px;
+  background: linear-gradient(transparent, rgba(0, 0, 0, 0.1));
+  color: var(--text-secondary);
+  font-size: 13px;
+  pointer-events: none;
+}
+
+.map-header {
+  position: absolute;
+  left: 16px;
+  right: 16px;
+  top: 16px;
+  z-index: 3;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+  backdrop-filter: blur(10px);
+}
+
+.map-instructions {
+  margin: 0;
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+.guess-indicator {
+  position: absolute;
+  bottom: 16px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 8px 16px;
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+  backdrop-filter: blur(8px);
+  color: var(--text-secondary);
+  font-size: 13px;
+}
+
+/* Controls */
 .controls-panel {
-  position:fixed; left:20px; right:20px; bottom:18px; display:flex; gap:12px; align-items:center; justify-content:center; padding:12px;
-  z-index:90; border-radius:14px; backdrop-filter: blur(6px); border:1px solid rgba(255,255,255,0.03);
-  background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(0,0,0,0.02));
+  position: fixed;
+  left: 20px;
+  right: 20px;
+  bottom: 20px;
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+  z-index: 90;
 }
 
-/* result modal */
+/* Result Modal */
 .round-result {
-  position:fixed; inset:0; z-index:120; display:flex; align-items:center; justify-content:center; background:linear-gradient(180deg, rgba(0,0,0,0.6), rgba(0,0,0,0.75));
-}
-.result-card { width:min(520px,94%); padding:22px; text-align:center; border-radius:16px; }
-.result-title { margin:0 0 12px 0; font-size:20px; font-weight:800; color:var(--text); }
-.result-stats { display:flex; gap:18px; justify-content:center; margin-top:12px; }
-.result-item { padding:12px 16px; border-radius:12px; background:rgba(255,255,255,0.02); border:1px solid rgba(255,255,255,0.03); }
-.result-label { font-size:12px; color:var(--text-muted); display:block; }
-.result-value { font-size:18px; font-weight:800; }
-
-/* beam animation */
-.beam-animation { height:6px; margin-top:14px; background:linear-gradient(90deg, transparent, rgba(var(--cyan-rgb),0.85), rgba(var(--amber-rgb),0.9), transparent); box-shadow:0 6px 30px rgba(var(--cyan-rgb),0.12); animation: beam 2s ease-in-out infinite; }
-@keyframes beam { 0% { transform:scaleX(0.8); opacity:0.6 } 50% { transform:scaleX(1.02); opacity:1 } 100% { transform:scaleX(0.8); opacity:0.6 } }
-
-/* summary screen */
-.summary-screen { position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:70; }
-.summary-card { width:min(920px,96%); padding:28px; border-radius:16px; display:flex; flex-direction:column; gap:16px; align-items:center; }
-
-/* rounds chart placeholder */
-.rounds-chart { width:100%; min-height:160px; display:flex; gap:8px; align-items:end; padding:12px; }
-
-/* small touch-ups */
-.hidden { display:none !important; }
-.sr-only { position:absolute; width:1px; height:1px; overflow:hidden; clip:rect(1px,1px,1px,1px); }
-
-/* responsive */
-@media (max-width:920px) {
-  .game-main { grid-template-columns: 1fr; grid-template-rows: 1fr 360px; top:92px; bottom:140px; }
-  .intro-card { padding:18px; }
-  .brand-row { gap:12px; }
-  .neon-badge { width:64px; height:64px; }
-  .globe-emoji { font-size:28px; }
-  .game-title { font-size:20px; }
-  .controls-panel { flex-direction:column; padding:10px; }
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(4px);
 }
 
-/* small screens */
-@media (max-width:480px) {
-  .game-header { left:10px; right:10px; top:8px; height:64px; padding:8px; }
-  .intro-card { width:96%; padding:14px; border-radius:12px; }
-  .brand-row { gap:10px; }
-  .meta-row { display:none; }
-  .game-main { top:86px; bottom:120px; left:12px; right:12px; grid-gap:12px; }
+.result-card {
+  width: min(400px, 90%);
+  padding: 24px;
+  text-align: center;
+}
+
+.result-title {
+  margin: 0 0 16px 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+
+.result-stats {
+  display: flex;
+  gap: 16px;
+  justify-content: center;
+  margin: 16px 0;
+}
+
+.result-item {
+  padding: 12px 16px;
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+}
+
+.result-label {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+
+.result-value {
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.beam-animation {
+  height: 4px;
+  margin: 16px 0;
+  background: linear-gradient(90deg, var(--accent-primary), var(--accent-secondary));
+  border-radius: 2px;
+  animation: beam 2s ease-in-out infinite;
+}
+
+@keyframes beam {
+  0%, 100% { opacity: 0.6; }
+  50% { opacity: 1; }
+}
+
+/* Summary Screen */
+.summary-screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 70;
+  background: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+}
+
+.summary-card {
+  width: min(500px, 90%);
+  padding: 30px;
+  text-align: center;
+}
+
+.summary-title {
+  margin: 0 0 20px 0;
+  font-size: 24px;
+  font-weight: 700;
+}
+
+.final-score {
+  margin: 20px 0;
+}
+
+.score-label {
+  font-size: 14px;
+  color: var(--text-muted);
+}
+
+.score-value {
+  font-size: 36px;
+  font-weight: 800;
+}
+
+.rounds-summary {
+  width: 100%;
+  padding: 20px;
+  margin: 16px 0;
+}
+
+.rounds-chart {
+  width: 100%;
+  min-height: 120px;
+  display: flex;
+  gap: 8px;
+  align-items: end;
+  padding: 12px;
+  border-radius: var(--radius-md);
+  background: var(--bg-glass);
+}
+
+.summary-actions {
+  display: flex;
+  gap: 12px;
+  justify-content: center;
+  margin-top: 20px;
+}
+
+/* Utility */
+.hidden { display: none !important; }
+
+/* Responsive */
+@media (max-width: 768px) {
+  .game-main { 
+    grid-template-columns: 1fr; 
+    grid-template-rows: 1fr 300px; 
+  }
+  
+  .controls-panel { 
+    flex-direction: column; 
+  }
+  
+  .game-stats {
+    gap: 12px;
+  }
+  
+  .result-stats {
+    flex-direction: column;
+    gap: 8px;
+  }
+}
+
+@media (max-width: 480px) {
+  .game-header { 
+    left: 10px; 
+    right: 10px; 
+    top: 10px; 
+  }
+  
+  .game-main { 
+    top: 80px; 
+    bottom: 80px; 
+    left: 10px; 
+    right: 10px; 
+  }
+  
+  .controls-panel { 
+    left: 10px; 
+    right: 10px; 
+    bottom: 10px; 
+  }
+  
+  .summary-actions {
+    flex-direction: column;
+  }
+}
+div[style*="position: absolute; pointer-events: none;"][style*="text-align: center;"] {
+  display: none !important;
+  visibility: hidden !important;
+}
+/* --- DARK THEME PATCH (Add to bottom of style.css) --- */
+
+/* 1. Hides the "Look around" hint, as requested */
+.streetview-overlay {
+  display: none !important;
+}
+
+/* 2. Fixes the "weird" light-colored loading & summary screens */
+.loading-screen,
+.summary-screen {
+  /* Use a dark, blurred background instead of the old white one */
+  background: rgba(13, 11, 20, 0.7); /* Dark transparent background */
+  backdrop-filter: blur(8px);
+}
+
+/* 3. Fixes the "weird" meta pills on the intro screen */
+.meta-pill {
+  /* Make them match the dark theme glass */
+  background: rgba(28, 25, 38, 0.6); /* Dark glass */
+  color: var(--text-secondary);
+  border: 1px solid var(--glass-border);
+}
+
+/* 4. Fixes the "weird" light guess indicator pill */
+.guess-indicator {
+  background: rgba(28, 25, 38, 0.8); /* Dark glass */
+  color: var(--text-secondary);
+  border: 1px solid var(--glass-border);
+}
+/*
+  WARNING: This just hides the API error.
+  It does NOT fix the broken map.
+  Your API key is not loading.
+*/
+div[style*="background-color: white;"][style*="font-weight: 500;"][style*="font-family: Robo"] {
+  display: none !important;
+  visibility: hidden !important;
 }
