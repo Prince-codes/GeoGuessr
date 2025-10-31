@@ -4,7 +4,7 @@ let map, guessMarker, actualMarker, polyline;
 function initMap(containerId){
   map = new google.maps.Map(document.getElementById(containerId),{
     center:{lat:20,lng:0}, zoom:2, minZoom:1, maxZoom:8,
-    disableDefaultUI:true, gestureHandling:'greedy', mapTypeId:'terrain',
+    disableDefaultUI:true, gestureHandling:'greedy', mapTypeId:'roadmap',
     styles:[
       {elementType:'geometry', stylers:[{color:'#1B1212'}]},
       {elementType:'labels.text.stroke', stylers:[{color:'#1B1212'}]},
@@ -24,9 +24,7 @@ function initMap(containerId){
 function placeGuess(latLng){
   if(guessMarker){guessMarker.setMap(null)}
   guessMarker = new google.maps.Marker({
-    position:latLng, map, icon:{
-      url:'assets/icons/pin-guess.png', scaledSize:new google.maps.Size(36,36),
-    }, animation:google.maps.Animation.DROP
+    position:latLng, map, animation:google.maps.Animation.DROP
   });
   document.getElementById('submit-guess').disabled = false;
 }
@@ -34,9 +32,7 @@ function placeGuess(latLng){
 function revealActual(actualLatLng){
   if(actualMarker){actualMarker.setMap(null)}
   actualMarker = new google.maps.Marker({
-    position:actualLatLng, map, icon:{
-      url:'assets/icons/pin-actual.png', scaledSize:new google.maps.Size(40,40),
-    }
+    position:actualLatLng, map,
   });
 
   if(polyline){polyline.setMap(null)}

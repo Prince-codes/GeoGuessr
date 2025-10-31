@@ -15,12 +15,12 @@ function calculateDistance(lat1, lon1, lat2, lon2) {
 }
 
 function scoreFromDistance(km) {
-  if (km < 100) return 1000;
-  if (km < 500) return 850;
-  if (km < 1000) return 700;
-  if (km < 3000) return 500;
-  if (km < 7000) return 300;
-  return 100;
+  if (km < 100) return 95;
+  if (km < 500) return 85;
+  if (km < 1000) return 70;
+  if (km < 3000) return 50;
+  if (km < 7000) return 30;
+  return 0;
 }
 
 function timeBonus(seconds) {
@@ -80,6 +80,7 @@ async function startRound() {
   
   try {
     const latLng = await window.loadRandomPano();
+    logLocationDetails(latLng); 
     setLoading(false);
     startTimer();
   } catch (error) {
@@ -93,6 +94,45 @@ function endRound(distanceKm, points) {
   updateHeader();
   document.getElementById('result-distance').textContent = `${distanceKm.toFixed(1)} km`;
   document.getElementById('result-points').textContent = `${points}`;
+  const thisRound = roundData[roundData.length - 1];
+  const actualPos = thisRound.actual;
+  const guessPos = thisRound.guess;
+
+  // 2. Create a new map in the "result-map" div
+  const resultMap = new google.maps.Map(document.getElementById('result-map'), {
+    disableDefaultUI: true,
+    gestureHandling: 'greedy',
+    mapTypeId: 'terrain',
+    styles: [ // These styles make the map dark
+      {elementType:'geometry', stylers:[{color:'#1B1212'}]},
+      {elementType:'labels.text.stroke', stylers:[{color:'#1B1212'}]},
+      {elementType:'labels.text.fill', stylers:[{color:'#FFBF00'}]},
+      {featureType:'administrative', elementType:'geometry', stylers:[{visibility:'off'}]},
+      {featureType:'poi', stylers:[{visibility:'off'}]},
+      {featureType:'road', stylers:[{visibility:'off'}]},
+      {featureType:'water', elementType:'geometry', stylers:[{color:'#0b0b0f'}]}
+    ]
+  });
+
+  // 3. Add markers for the guess and the answer
+  new google.maps.Marker({ position: actualPos, map: resultMap });
+  new google.maps.Marker({ position: guessPos, map: resultMap });
+
+  // 4. Add the line between them
+  new google.maps.Polyline({
+    path: [guessPos, actualPos],
+    map: resultMap,
+    strokeColor: '#FFBF00',
+    strokeOpacity: 0.9,
+    strokeWeight: 3
+  });
+
+  // 5. Zoom the mini-map to fit both points
+  const bounds = new google.maps.LatLngBounds();
+  bounds.extend(actualPos);
+  bounds.extend(guessPos);
+  resultMap.fitBounds(bounds, 20); // 20 is the padding
+  // --- End of New Mini-Map Logic ---
   document.getElementById('round-result').classList.remove('hidden');
   document.getElementById('next-round').classList.remove('hidden');
 }
@@ -283,6 +323,37 @@ function initApp() {
     console.error('Error initializing app:', error);
   }
 }
+// PASTE THIS AT THE BOTTOM OF SCRIPT.JS
 
+function logLocationDetails(latLng) {
+  const geocoder = new google.maps.Geocoder();
+  geocoder.geocode({ 'location': latLng }, (results, status) => {
+    if (status === 'OK') {
+      if (results[0]) {
+        const components = results[0].address_components;
+        
+        // Find each part of the address
+        const location = {
+          city: components.find(c => c.types.includes('locality'))?.long_name,
+          state: components.find(c => c.types.includes('administrative_area_level_1'))?.long_name,
+          country: components.find(c => c.types.includes('country'))?.long_name,
+          full_address: results[0].formatted_address
+        };
+
+        console.log('--- Actual Location ---');
+        console.log('City:', location.city || 'N/A');
+        console.log('State:', location.state || 'N/A');
+        console.log('Country:', location.country || 'N/A');
+        console.log('Full:', location.full_address);
+        console.log('-----------------------');
+
+      } else {
+        console.log('No geocoder results found');
+      }
+    } else {
+      console.log('Geocoder failed due to: ' + status);
+    }
+  });
+}
 // Make initApp globally available
 window.initApp = initApp;
