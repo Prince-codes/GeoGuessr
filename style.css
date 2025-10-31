@@ -50,7 +50,7 @@ body {
 .aurora-background {
   position: fixed; 
   inset: 0; 
-  z-index: -10; 
+  z-index: 1; 
   pointer-events: none;
   /* Updated to use accent colors for a subtle purple glow */
   background: linear-gradient(135deg, 
@@ -607,4 +607,34 @@ div[style*="position: absolute; pointer-events: none;"][style*="text-align: cent
 div[style*="background-color: white;"][style*="font-weight: 500;"][style*="font-family: Robo"] {
   display: none !important;
   visibility: hidden !important;
+}
+/* Result Modal */
+.round-result {
+  position: fixed;
+  inset: 0;
+  z-index: 120;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  
+  /* These lines are removed to prevent blur */
+  /* background: rgba(0, 0, 0, 0.5); */
+  /* backdrop-filter: blur(4px); */
+
+  /* This lets you click "through" the empty space to the map */
+  pointer-events: none;
+}
+
+/* Add this new rule so you can still click the modal's card and button */
+.round-result .result-card {
+  pointer-events: auto;
+}
+/* Style for the new mini-map container */
+.result-map-container {
+  height: 200px; /* You can adjust this height */
+  width: 100%;
+  margin: 16px 0; /* Adds padding like in your image */
+  border-radius: var(--radius-md);
+  overflow: hidden; /* Ensures map stays within the border */
+  background: #000; /* Placeholder color */
 }

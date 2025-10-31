@@ -15,7 +15,7 @@
 </head>
 <body data-color-scheme="dark">
   <!-- Aurora Background (multi-layer) -->
-  <div class="aurora-background" aria-hidden="true">
+<div id="particles-js" class="aurora-background"></div>
     <div class="aurora-layer aurora-layer-1"></div>
     <div class="aurora-layer aurora-layer-2"></div>
     <div class="aurora-layer aurora-layer-3"></div>
@@ -133,6 +133,7 @@
             <div id="result-points" class="result-value neon-text">0</div>
           </div>
         </div>
+        <div id="result-map" class="result-map-container"></div>
         <div id="beam-animation" class="beam-animation"></div>
         <div class="result-actions">
           <button id="next-after-result" class="btn neon-btn"><span>Continue</span><span class="btn-glow"></span></button>
@@ -168,8 +169,19 @@
   <script src="streetviewHandler.js"></script>
   <script src="mapHandler.js"></script>
   <script src="script.js"></script>
-
   <!-- Google Maps (keeps your key as-is) -->
   <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDIUNl6JcnYJOmz_sXXhQj4Oom4TIzZuT0&libraries=geometry&callback=initApp"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tsparticles/3.9.1/tsparticles.bundle.min.js"></script>
+
+  <script>
+    // This waits for the page to be ready
+    document.addEventListener('DOMContentLoaded', () => {
+      // This tells tsParticles to find the "particles-js" div
+      // and load the "stars" preset into it.
+      tsParticles.load("particles-js", {
+        preset: "stars"
+      });
+    });
+  </script>
 </body>
 </html>
